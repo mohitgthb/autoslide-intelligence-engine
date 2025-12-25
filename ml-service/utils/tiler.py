@@ -13,8 +13,7 @@ def tile_image(
     Returns metadata about tiling.
     """
     os.makedirs(output_dir, exist_ok=True)
-
-    img = Image.open(image_path)
+    img = Image.open(image_path).convert("RGB")
     width, height = img.size
 
     tiles = []

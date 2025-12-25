@@ -4,6 +4,7 @@ import uuid
 
 from utils.image_utils import read_image_info
 from utils.tiler import tile_image
+from ml.inference.aggregate import predict_slide_quality
 
 app = FastAPI(title= "Autoslide ml service")
 
@@ -59,4 +60,18 @@ def tile_uploaded_image(filename: str):
             "tile_size": result["tile_size"],
             "num_tiles": result["num_tiles"]
         }
+    }
+
+@app.post("/analyze-slide/{filename}")
+def analyze_slide(filename: str):
+    tiles_dir = os.path.join("uploads", "tiles", filename.split(".")[0])
+
+    if not os.path.exists(tiles_dir):
+        return {"error": "Tiles directory not found"}
+    
+    result = predict_slide_quality(tiles_dir)
+
+    return {
+        "message": "Slide analysis completed",
+        "analysis_result": result
     }
