@@ -9,3 +9,13 @@ __pycache__/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Data & uploads
+uploads/
+data/
+database/
+*.db
+
+# ML artifacts
+models/*.pt
+models/*.pth

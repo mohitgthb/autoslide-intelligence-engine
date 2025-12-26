@@ -6,6 +6,7 @@ from utils.image_utils import read_image_info
 from utils.tiler import tile_image
 from ml.inference.aggregate import predict_slide_quality
 from utils.heatmap import generate_tile_heatmap
+from utils.tile_manager import manage_tiles
 
 app = FastAPI(title= "Autoslide ml service")
 
@@ -96,3 +97,21 @@ def generate_heatmap(filename: str):
         "message": "Heatmap generated successfully",
         "heatmap_path": heatmap_path
     }
+
+@app.post("/manage-tiles/{filename}")
+def manage_image_tiles(filename: str, max_tiles: int = 1000, sample_rate: float = 0.3):
+    tiles_dir = os.path.join("uploads", "tiles", filename.split(".")[0])
+
+    if not os.path.exists(tiles_dir):
+        return {"error": "Tiles directory not found"}
+    
+    manage_tiles(
+        tile_dir = tiles_dir,
+        max_tiles = max_tiles,
+        sample_rate = sample_rate
+    )
+
+    return {
+        "message": "Tile management completed"
+    }
+

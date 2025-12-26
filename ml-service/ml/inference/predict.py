@@ -4,9 +4,12 @@ from PIL import Image
 
 from models.blur_model import BlurQualityModel
 
-#load pre-trained model
+#load pre-trained mode
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = BlurQualityModel().to(device)
+
+#bootstrap model
+model.load_state_dict(torch.load("models/blur_model.pt", map_location=device))
 model.eval()
 
 transform = transforms.Compose([
