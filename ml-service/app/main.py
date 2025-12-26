@@ -5,6 +5,7 @@ import uuid
 from utils.image_utils import read_image_info
 from utils.tiler import tile_image
 from ml.inference.aggregate import predict_slide_quality
+from utils.heatmap import generate_tile_heatmap
 
 app = FastAPI(title= "Autoslide ml service")
 
@@ -74,4 +75,24 @@ def analyze_slide(filename: str):
     return {
         "message": "Slide analysis completed",
         "analysis_result": result
+    }
+
+@app.post("/heatmap/{filename}")
+def generate_heatmap(filename: str):
+    image_path = os.path.join(UPLOAD_DIR, filename)
+    tiles_dir = os.path.join("uploads", "tiles", filename.split(".")[0])
+
+    analysis = predict_slide_quality(tiles_dir)
+
+    heatmap_img = generate_tile_heatmap(
+        original_image_path = image_path,   
+        tiles_info = analysis["tiles"]
+    )
+
+    heatmap_path = os.path.join(UPLOAD_DIR, f"heatmap_{filename}")
+    heatmap_img.save(heatmap_path)
+
+    return {
+        "message": "Heatmap generated successfully",
+        "heatmap_path": heatmap_path
     }

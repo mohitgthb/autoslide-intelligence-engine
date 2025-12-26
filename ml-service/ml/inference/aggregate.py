@@ -8,14 +8,20 @@ def predict_slide_quality(tiles_dir: str):
         if file.endswith(".png") or file.endswith(".jpg") or file.endswith(".jpeg"):
             tile_path = os.path.join(tiles_dir, file)
             score = predict_tile(tile_path)
-            scores.append(score)
+            scores.append({
+                "tile": file,
+                "score": score
+            })
 
     if not scores:
         return None
     
+    tile_scores = [s["score"] for s in scores]
+    
     return {
-        "num_tiles": len(scores),
-        "average_score": sum(scores) / len(scores),
-        "min_score": min(scores),
-        "max_score": max(scores)
+        "num_tiles": len(tile_scores),
+        "average_score": sum(tile_scores) / len(tile_scores),
+        "min_score": min(tile_scores),
+        "max_score": max(tile_scores),
+        "tiles": scores
     }
