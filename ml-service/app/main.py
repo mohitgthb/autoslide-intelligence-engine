@@ -7,6 +7,8 @@ from utils.tiler import tile_image
 from ml.inference.aggregate import predict_slide_quality
 from utils.heatmap import generate_tile_heatmap
 from utils.tile_manager import manage_tiles
+from utils.tissue_coverage import compute_tissue_coverage
+
 
 app = FastAPI(title= "Autoslide ml service")
 
@@ -73,10 +75,18 @@ def analyze_slide(filename: str):
     
     result = predict_slide_quality(tiles_dir)
 
+    tissue_coverage = compute_tissue_coverage(
+    os.path.join(UPLOAD_DIR, filename)
+   )
+
     return {
         "message": "Slide analysis completed",
-        "analysis_result": result
+        "analysis_result": {
+            **result,
+            "tissue_coverage": tissue_coverage
     }
+}
+
 
 @app.post("/heatmap/{filename}")
 def generate_heatmap(filename: str):
