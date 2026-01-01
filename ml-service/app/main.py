@@ -9,6 +9,8 @@ from utils.heatmap import generate_tile_heatmap
 from utils.tile_manager import manage_tiles
 from utils.tissue_coverage import compute_tissue_coverage
 from utils.stain_quality import compute_stain_quality
+from utils.quality_aggregator import aggregate_quality
+
 
 app = FastAPI(title= "Autoslide ml service")
 
@@ -77,17 +79,30 @@ def analyze_slide(filename: str):
 
     image_path = os.path.join(UPLOAD_DIR, filename)
 
+    # Existing metrics
+    blur_result = result
+    blur_score = blur_result["average_score"]
+
     tissue_coverage = compute_tissue_coverage(image_path)
     stain_quality = compute_stain_quality(image_path)
+    overall_quality, decision = aggregate_quality(
+    blur_score=blur_score,
+    tissue_coverage=tissue_coverage,
+    stain_quality=stain_quality
+    )
 
     return {
     "message": "Slide analysis completed",
     "analysis_result": {
-        **result,
+        "blur_score": blur_score,
         "tissue_coverage": tissue_coverage,
-        "stain_quality": stain_quality
+        "stain_quality": stain_quality,
+        "overall_quality": overall_quality,
+        "decision": decision
     }
 }
+
+
 
 
 
