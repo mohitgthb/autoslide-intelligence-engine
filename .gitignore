@@ -1,34 +1,41 @@
-# Python virtual environment
-venv/
-.env/
+# =========================
+# Node / Backend
+# =========================
+backend/node_modules/
+backend/.env
+backend/npm-debug.log*
+backend/yarn-debug.log*
 
-# Python cache
-__pycache__/
-*.pyc
+# =========================
+# Python / ML
+# =========================
+ml-service/venv/
+ml-service/__pycache__/
+ml-service/**/*.pyc
 
-# OS files
-.DS_Store
-Thumbs.db
-
-# Data & uploads
-uploads/
-data/
-database/
-*.db
-
-# ML artifacts
+# =========================
+# ML artifacts (VERY IMPORTANT)
+# =========================
 ml-service/models/*.pt
 ml-service/models/*.pth
+ml-service/models/*.onnx
 
 # =========================
-# Node.js
+# Data & uploads
 # =========================
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
+ml-service/uploads/
+ml-service/data/
+ml-service/**/*.db
 
-# Build outputs
-dist/
-build/
+# =========================
+# Environment files (global safety)
+# =========================
+.env
+
+# =========================
+# OS / Editor
+# =========================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
