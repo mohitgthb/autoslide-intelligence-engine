@@ -17,8 +17,8 @@ database/
 *.db
 
 # ML artifacts
-models/*.pt
-models/*.pth
+ml-service/models/*.pt
+ml-service/models/*.pth
 
 # =========================
 # Node.js
