@@ -1,0 +1,15 @@
+const express = require('express');
+const cors = require('cors');
+
+const app = express();
+
+const authMiddleware = require('./middleware/auth.middleware');
+const authRoutes = require('./routes/auth.routes');
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+app.use("/api/auth", authRoutes);
+
+module.exports = app;
