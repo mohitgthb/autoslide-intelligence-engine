@@ -83,3 +83,36 @@ exports.analyzeSlide = async (req, res) => {
 //   },
 //   body: formData
 // });
+
+
+//get logged in user analysis history
+exports.getMyAnalysis = async (req, res) => {
+    try{
+        const analyses = (await Analysis.find({user: req.user})).sort( {createdAt: -1} );
+
+        res.json({
+            success: true,
+            count: analyses.length,
+            analyses
+        });
+    }  catch (err) {
+        res.status(500).json({ msg: "Failed to retrieve analysis history" });
+    }
+};
+
+//get analysis by ID
+exports.getAnalysisById = async (res , req) => {
+    try {
+        const analysis = await Analysis.findOne({
+            _id: req.params.id,
+            user: req.user
+        });
+
+        if(!analysis){
+            return res.status(404).json({ msg: "Analysis not found" });
+        }
+        res.json({ success: true, analysis });
+    } catch (err) {
+        res.status(500).json({ msg: "Failed to retrieve analysis" });
+    }
+};
