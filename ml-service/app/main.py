@@ -103,6 +103,55 @@ def analyze_slide(filename: str):
 }
 
 
+@app.post("/analyze")
+async def analyze(file: UploadFile = File(...)):
+    # 1️⃣ Save file
+    ext = file.filename.split(".")[-1]
+    filename = f"{uuid.uuid4()}.{ext}"
+    file_path = os.path.join(UPLOAD_DIR, filename)
+
+    with open(file_path, "wb") as f:
+        f.write(await file.read())
+
+    # 2️⃣ Tile image
+    tiles_dir = os.path.join("uploads", "tiles", filename.split(".")[0])
+    result = tile_image(
+        image_path=file_path,
+        output_dir=tiles_dir,
+        tile_size=256,
+        overlap=0
+    )
+
+    if result is None:
+        return {"error": "Image too small for tiling"}
+
+    # (Optional) manage tile storage
+    manage_tiles(tiles_dir)
+
+    # 3️⃣ Blur inference
+    blur_result = predict_slide_quality(tiles_dir)
+    blur_score = blur_result["average_score"]
+
+    # 4️⃣ Other metrics
+    tissue_coverage = compute_tissue_coverage(file_path)
+    stain_quality = compute_stain_quality(file_path)
+
+    # 5️⃣ Final aggregation
+    overall_quality, decision = aggregate_quality(
+        blur_score=blur_score,
+        tissue_coverage=tissue_coverage,
+        stain_quality=stain_quality
+    )
+
+    return {
+        "analysis_result": {
+            "blur_score": blur_score,
+            "tissue_coverage": tissue_coverage,
+            "stain_quality": stain_quality,
+            "overall_quality": overall_quality,
+            "decision": decision
+        }
+    }
 
 
 
