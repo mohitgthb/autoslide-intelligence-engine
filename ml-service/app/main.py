@@ -1,4 +1,5 @@
 from fastapi import FastAPI, UploadFile, File
+from fastapi.responses import JSONResponse
 import os
 import uuid
 
@@ -105,54 +106,58 @@ def analyze_slide(filename: str):
 
 @app.post("/analyze")
 async def analyze(file: UploadFile = File(...)):
-    # 1️⃣ Save file
-    ext = file.filename.split(".")[-1]
-    filename = f"{uuid.uuid4()}.{ext}"
-    file_path = os.path.join(UPLOAD_DIR, filename)
+    try:
+        ext = file.filename.split(".")[-1]
+        filename = f"{uuid.uuid4()}.{ext}"
+        file_path = os.path.join(UPLOAD_DIR, filename)
 
-    with open(file_path, "wb") as f:
-        f.write(await file.read())
+        with open(file_path, "wb") as f:
+            f.write(await file.read())
 
-    # 2️⃣ Tile image
-    tiles_dir = os.path.join("uploads", "tiles", filename.split(".")[0])
-    result = tile_image(
-        image_path=file_path,
-        output_dir=tiles_dir,
-        tile_size=256,
-        overlap=0
-    )
+        tiles_dir = os.path.join("uploads", "tiles", filename.split(".")[0])
+        result = tile_image(
+            image_path=file_path,
+            output_dir=tiles_dir,
+            tile_size=256,
+            overlap=0
+        )
 
-    if result is None:
-        return {"error": "Image too small for tiling"}
+        if result is None:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Image too small for tiling"}
+            )
 
-    # (Optional) manage tile storage
-    manage_tiles(tiles_dir)
+        blur_result = predict_slide_quality(tiles_dir)
+        blur_score = blur_result["average_score"]
 
-    # 3️⃣ Blur inference
-    blur_result = predict_slide_quality(tiles_dir)
-    blur_score = blur_result["average_score"]
+        manage_tiles(tiles_dir)
 
-    # 4️⃣ Other metrics
-    tissue_coverage = compute_tissue_coverage(file_path)
-    stain_quality = compute_stain_quality(file_path)
+        tissue_coverage = compute_tissue_coverage(file_path)
+        stain_quality = compute_stain_quality(file_path)
 
-    # 5️⃣ Final aggregation
-    overall_quality, decision = aggregate_quality(
-        blur_score=blur_score,
-        tissue_coverage=tissue_coverage,
-        stain_quality=stain_quality
-    )
+        overall_quality, decision = aggregate_quality(
+            blur_score=blur_score,
+            tissue_coverage=tissue_coverage,
+            stain_quality=stain_quality
+        )
 
-    return {
-        "analysis_result": {
-            "blur_score": blur_score,
-            "tissue_coverage": tissue_coverage,
-            "stain_quality": stain_quality,
-            "overall_quality": overall_quality,
-            "decision": decision
+        return {
+            "analysis_result": {
+                "blur_score": blur_score,
+                "tissue_coverage": tissue_coverage,
+                "stain_quality": stain_quality,
+                "overall_quality": overall_quality,
+                "decision": decision
+            }
         }
-    }
 
+    except Exception as e:
+        print("ANALYZE ERROR:", str(e))
+        return JSONResponse(
+            status_code=500,
+            content={"error": str(e)}
+        )
 
 
 @app.post("/heatmap/{filename}")

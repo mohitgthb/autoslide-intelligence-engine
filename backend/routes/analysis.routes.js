@@ -4,7 +4,7 @@ const upload = require("../config/multer");
 const authMiddleware = require("../middleware/auth.middleware");
 const { analyzeSlide, getMyAnalysis, getAnalysisById } = require("../controllers/analysis.controller");
 
-router.post("/analyze", authMiddleware, upload.single("image"), analyzeSlide);
+router.post("/", authMiddleware, upload.single("file"), analyzeSlide);
 router.get("/myanalysis", authMiddleware, getMyAnalysis);
 router.get("/:id", authMiddleware, getAnalysisById);
 
