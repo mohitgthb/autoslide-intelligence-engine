@@ -23,7 +23,7 @@ exports.analyzeSlide = async (req, res) => {
 
         //  Call Python ML service
         const response = await axios.post(
-            "http://127.0.0.1:8000/upload-image",
+            "http://127.0.0.1:8000/analyze",
             formData,
             {
                 headers: formData.getHeaders(),
